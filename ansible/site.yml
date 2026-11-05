@@ -1,0 +1,35 @@
+---
+- name: Configure AWS EC2 Kubernetes Server
+  hosts: aws_servers
+  become: yes
+
+  tasks:
+    - name: Ensure curl is installed
+      apt:
+        name: curl
+        state: present
+        update_cache: yes
+
+    - name: Ensure K3s service is running
+      systemd:
+        name: k3s
+        state: started
+        enabled: yes
+
+    - name: Check Kubernetes node status
+      command: kubectl get nodes
+      register: node_status
+      changed_when: false
+
+    - name: Display Kubernetes node status
+      debug:
+        var: node_status.stdout
+
+    - name: Check Expense Tracker deployment
+      command: kubectl get deployment expense-tracker
+      register: deployment_status
+      changed_when: false
+
+    - name: Display deployment status
+      debug:
+        var: deployment_status.stdout
