@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -18,7 +19,6 @@ pipeline {
                 checkout scm
             }
         }
-
 
         stage('Build and Test') {
             steps {
@@ -65,6 +65,11 @@ pipeline {
                     sh '''
                         chmod 600 "$EC2_KEY"
 
+                        scp -i "$EC2_KEY" \
+                            -o StrictHostKeyChecking=no \
+                            k8s/deployment-metadata.yaml \
+                            ubuntu@$EC2_HOST:/tmp/deployment-metadata.yaml
+
                         ssh -i "$EC2_KEY" \
                             -o StrictHostKeyChecking=no \
                             ubuntu@$EC2_HOST "
@@ -74,6 +79,7 @@ pipeline {
                                     $ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_NUMBER &&
                                 sudo kubectl set image deployment/expense-tracker \
                                     expense-tracker=$ECR_REGISTRY/$ECR_REPOSITORY:$BUILD_NUMBER &&
+                                sudo kubectl apply -f /tmp/deployment-metadata.yaml &&
                                 sudo kubectl rollout status deployment/expense-tracker
                             "
                     '''

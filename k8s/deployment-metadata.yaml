@@ -1,0 +1,7 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: expense-tracker
+  namespace: default
+  annotations:
+    project-message: "Updated through Jenkins CI/CD pipeline"
